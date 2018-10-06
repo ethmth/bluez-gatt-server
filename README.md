@@ -1,3 +1,15 @@
+python-gatt-server-redis
+========================
+
+*Still under dev.* Researching to make a util that can automatically update BLE Characteristics from Redis.
+
+Below is the original README from Jumper Labs - full credit to them for sharing their great project that helps other reduce much time/effort trying to resolve issues in the undocumented bluez examples (test folder).
+
+(I am currently using Bluez 5.50 with success so far and no need to enable 'experimental' features.)
+
+---
+
+
 # Python BLE GATT Server (peripheral)
 GATT is constructed out of one or more server devices (BLE peripherals) and a client device (BLE central).
 
