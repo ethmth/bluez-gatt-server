@@ -77,6 +77,11 @@ class Service(dbus.service.Object):
     def __init__(self, bus, index, uuid, primary):
         self.path = self.PATH_BASE + str(index)
         self.bus = bus
+
+        # framework requires hex string so auto format it if an int was specified
+        if isinstance(uuid, int):
+            uuid = '0x%x' % uuid
+            
         self.uuid = uuid
         self.primary = primary
         self.characteristics = []
@@ -125,6 +130,11 @@ class Characteristic(dbus.service.Object):
     def __init__(self, bus, index, uuid, flags, service):
         self.path = service.path + '/char' + str(index)
         self.bus = bus
+
+        # framework requires hex string so auto format it if an int was specified
+        if isinstance(uuid, int):
+            uuid = '0x%x' % uuid
+
         self.uuid = uuid
         self.service = service
         self.flags = flags

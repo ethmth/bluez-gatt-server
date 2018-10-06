@@ -5,9 +5,16 @@ import dbus.service
 import functools
 import gatt_server
 import adapters
+from gatt_server import Application
+from gatt_server import Service
+from gatt_server import Characteristic
+import sys
+import traceback
+import ble_service_uuid_list
+import ble_characteristic_uuid_list
 
 
-class AppTemplate(gatt_server.Application):
+class AppTemplate(Application):
     """
     org.bluez.GattApplication1 interface implementation
     """
@@ -47,6 +54,61 @@ class AppTemplate(gatt_server.Application):
 
         return response
 
+
+class ReadNotifyCharacteristic(Characteristic):
+
+    ######### Below functions would be used by the app developer (us)
+    
+    def __init__(self, bus, index, service, chrc_uuid, initial_value):
+
+        Characteristic.__init__(
+            self, bus, index,
+            chrc_uuid,            
+            ['read', 'notify'],
+            service)
+        self.notifying = False
+        self.value = initial_value
+
+        
+    def update_value(self, value):
+        self.value = value
+        if not self.notifying:
+            return
+        self.PropertiesChanged(
+                gatt_server.GATT_CHRC_IFACE,
+                {'Value': [dbus.Byte(self.value)] }, [])
+
+
+    ########### Below funcs would be used/called by the framework
+    
+    def ReadValue(self, options):
+        try:
+            if self.value is None:
+                print "WARNING: ReadValue called when self.value is None"
+            return [dbus.Byte(self.value)]
+        except:
+            type_, value_, traceback_ = sys.exc_info()
+            exstr = str(traceback.format_exception(type_, value_, traceback_))        
+            print "WARNING: ReadValue - exception:", exstr
+        return None
+
+    
+    def StartNotify(self):
+        if self.notifying:
+            print('Already notifying, nothing to do')
+            return
+
+        self.notifying = True
+
+        
+    def StopNotify(self):
+        if not self.notifying:
+            print('Not notifying, nothing to do')
+            return
+
+        self.notifying = False
+
+        
     
 def register_app_cb():
     print('GATT application registered')
@@ -57,7 +119,15 @@ def register_app_error_cb(mainloop, error):
     mainloop.quit()
 
 
-def start_server(mainloop, bus, adapter_name):
+def create_read_notify_service(bus, index, service_uuid, is_primary, chrc_uuid_to_default_val_dict):
+    service = Service(bus, index, service_uuid, is_primary)
+    for chrc_uuid in chrc_uuid_to_default_val_dict.keys():
+        chrc = ReadNotifyCharacteristic(bus, index, service, chrc_uuid, chrc_uuid_to_default_val_dict[chrc_uuid])
+        service.add_characteristic(chrc)
+    return service
+
+
+def start_services(mainloop, bus, adapter_name, service_list):
     adapter = adapters.find_adapter(bus, gatt_server.GATT_MANAGER_IFACE, adapter_name)
     if not adapter:
         raise Exception('GattManager1 interface not found')
@@ -65,8 +135,7 @@ def start_server(mainloop, bus, adapter_name):
     service_manager = dbus.Interface(
             bus.get_object(gatt_server.BLUEZ_SERVICE_NAME, adapter),
             gatt_server.GATT_MANAGER_IFACE)
-
-    service_list = [gatt_server.BatteryService(bus, 1)]
+    
     app = AppTemplate(bus, service_list)
 
     print('Registering GATT application...')
