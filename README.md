@@ -5,7 +5,7 @@ mqtt-to-gatt-server
 
 Below is the original README from Jumper Labs - full credit to them for sharing their great project that really helps reduce much time/effort trying to resolve issues in the undocumented bluez examples (test folder).
 
-Right now, I am currently using Bluez 5.50 with success so far and no need to enable 'experimental' features. For testing, I recommend and really want to thank Nordic semi for providing their great free Android app named 'nRF Connect'.
+Right now, I am currently using Bluez 5.50 with good success so far and no need to enable 'experimental' features. For testing, I recommend and really want to thank Nordic semi for providing their great free Android app named 'nRF Connect'.
 
 ---
 
