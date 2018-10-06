@@ -34,6 +34,8 @@ def test():
         }
     )
     ####
+
+    # TODO: try run another thread that gets a ptr to the chrc and randomly changes its battery value - test with notify from phone...
     
     service_template.start_services(mainloop, bus, adapter_name, [test_batt_service])
     mainloop.run()
