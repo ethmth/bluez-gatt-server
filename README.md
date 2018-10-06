@@ -1,7 +1,7 @@
 python-gatt-server-redis
 ========================
 
-*Still under dev.* Researching to make a util that can automatically update BLE Characteristics from Redis.
+*Still under dev.* Researching to make a program that shall take all main configs from the command line args and host the specified BLE service, automatically update its BLE Characteristics from the specified Redis server/path.
 
 Below is the original README from Jumper Labs - full credit to them for sharing their great project that helps other reduce much time/effort trying to resolve issues in the undocumented bluez examples (test folder).
 
