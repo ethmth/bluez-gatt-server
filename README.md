@@ -1,7 +1,7 @@
-python-gatt-server-redis
-========================
+mqtt-to-gatt-server
+===================
 
-*Still under dev.* Researching to make a program that shall take all main configs from the command line args and host the specified BLE service, automatically update its BLE Characteristics from the specified Redis server/path.
+*Still under dev.* Stream data from a MQTT server (which might be from a remote BLE device) to local Bluetooth LE services' characteristics.
 
 Below is the original README from Jumper Labs - full credit to them for sharing their great project that helps other reduce much time/effort trying to resolve issues in the undocumented bluez examples (test folder).
 
