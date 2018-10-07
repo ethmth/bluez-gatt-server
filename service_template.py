@@ -120,10 +120,15 @@ def register_app_error_cb(mainloop, error):
 
 
 def create_read_notify_service(bus, index, service_uuid, is_primary, chrc_uuid_to_default_val_dict):
+
     service = Service(bus, index, service_uuid, is_primary)
+
+    chrc_index = 0
     for chrc_uuid in chrc_uuid_to_default_val_dict.keys():
-        chrc = ReadNotifyCharacteristic(bus, index, service, chrc_uuid, chrc_uuid_to_default_val_dict[chrc_uuid])
+        chrc = ReadNotifyCharacteristic(bus, chrc_index, service, chrc_uuid, chrc_uuid_to_default_val_dict[chrc_uuid])
         service.add_characteristic(chrc)
+        chrc_index += 1
+        
     return service
 
 
