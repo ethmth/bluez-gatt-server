@@ -7,6 +7,8 @@ Further below is the original README from Jumper Labs - full credit to them for 
 
 Right now, I am currently using Bluez 5.50 with good success so far and no need to enable 'experimental' features. For testing, I recommend and really want to thank Nordic semi for providing their great free Android app named 'nRF Connect'.
 
+Header format of most added files are from: http://web.archive.org/web/20111010053227/http://jaynes.colorado.edu/PythonGuidelines.html#module_formatting (linked from https://stackoverflow.com/questions/1523427/what-is-the-common-header-format-of-python-files).
+
 ---
 
 LICENSE
