@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+"""Provides simple ways to define and start BLE services.
+
+- use create_read_notify_service() to define a BLE Service and Read+Notify Characteristics in one call.
+- use start_services() to start the created servives
+"""
+
 import dbus
 import dbus.exceptions
 import dbus.mainloop.glib
@@ -12,6 +19,16 @@ import sys
 import traceback
 import ble_service_uuid_list
 import ble_characteristic_uuid_list
+import mqtt_to_gatt_utils
+
+__author__ = "Kasidit Yusuf"
+__copyright__ = "mqtt-to-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf."
+__credits__ = ["Kasidit Yusuf"]
+__license__ = "GPL"
+__version__ = "1.0"
+__maintainer__ = "Kasidit Yusuf"
+__email__ = "ykasidit@gmail.com"
+__status__ = "Production"
 
 
 class AppTemplate(Application):
@@ -119,13 +136,21 @@ def register_app_error_cb(mainloop, error):
     mainloop.quit()
 
 
-def create_read_notify_service(bus, index, service_uuid, is_primary, chrc_uuid_to_default_val_dict):
+def create_read_notify_service(bus, index, service_uuid, is_primary, chrc_uuid_list, chrc_default_val_list):
 
+    mqtt_to_gatt_utils.check_int_list(chrc_uuid_list)
+    mqtt_to_gatt_utils.check_int_list(chrc_default_val_list)
+
+    if len(chrc_uuid_list) != len(chrc_default_val_list):
+        raise Exception("The specified chrc_uuid_list doesnt have the same length as the specified chrc_default_val_list.")
+        
     service = Service(bus, index, service_uuid, is_primary)
 
     chrc_index = 0
-    for chrc_uuid in chrc_uuid_to_default_val_dict.keys():
-        chrc = ReadNotifyCharacteristic(bus, chrc_index, service, chrc_uuid, chrc_uuid_to_default_val_dict[chrc_uuid])
+    for i in range(len(chrc_uuid_list)):
+        chrc_uuid = chrc_uuid_list[i]
+        default_val = chrc_default_val_list[i]
+        chrc = ReadNotifyCharacteristic(bus, chrc_index, service, chrc_uuid, default_val)
         service.add_characteristic(chrc)
         chrc_index += 1
         

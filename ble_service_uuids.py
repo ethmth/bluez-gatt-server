@@ -1,4 +1,16 @@
-# from https://www.bluetooth.com/specifications/gatt/services  - taken into a spreadsheet to select two cols, and did string replaces tab with  = , - with _
+#!/usr/bin/env python
+"""Provides a list of Python variables holding BLE Characteristic UUIDs.
+
+Data from https://www.bluetooth.com/specifications/gatt/services  - taken into a spreadsheet to select two cols, and did string replaces tab with  = , - with _"""
+
+__author__ = "Kasidit Yusuf"
+__copyright__ = "mqtt-to-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf."
+__credits__ = ["Kasidit Yusuf"]
+__license__ = "GPL"
+__version__ = "1.0"
+__maintainer__ = "Kasidit Yusuf"
+__email__ = "ykasidit@gmail.com"
+__status__ = "Production"
 
 
 Generic_Access = 0x1800

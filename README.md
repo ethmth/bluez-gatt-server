@@ -3,12 +3,23 @@ mqtt-to-gatt-server
 
 *Still under dev.* Stream data from a MQTT server (which might be from a remote BLE device) to local Bluetooth LE services' characteristics.
 
-Below is the original README from Jumper Labs - full credit to them for sharing their great project that really helps reduce much time/effort trying to resolve issues in the undocumented bluez examples (test folder).
+Further below is the original README from Jumper Labs - full credit to them for sharing their great project that really helps reduce much time/effort trying to resolve issues in the undocumented bluez examples (test folder).
 
 Right now, I am currently using Bluez 5.50 with good success so far and no need to enable 'experimental' features. For testing, I recommend and really want to thank Nordic semi for providing their great free Android app named 'nRF Connect'.
 
 ---
 
+LICENSE
+-------
+
+mqtt-to-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf.
+
+Released under the GNU GPL v2 License - see COPYING file (from BlueZ project) for details. This project is a fork of 'python-gatt-server' (https://github.com/Jumperr-labs/python-gatt-server.git) originally by Jumper Labs which is based on 'BlueZ' (http://www.bluez.org/) example code. Credit goes to respective authors and see copyright notices of respective projects for further details.
+
+---
+
+Forked project's original README
+--------------------------------
 
 # Python BLE GATT Server (peripheral)
 GATT is constructed out of one or more server devices (BLE peripherals) and a client device (BLE central).

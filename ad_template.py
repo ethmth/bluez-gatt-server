@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+"""Provides simple ways to define and start BLE advertisements.
+
+Note: This file is not used right now as BlueZ already seems to maintain the advertisements based on defined services already.
+"""
+
 import dbus
 import dbus.exceptions
 import dbus.mainloop.glib
@@ -6,6 +12,15 @@ import functools
 import adapters
 import advertising
 from advertising import Advertisement
+
+__author__ = "Kasidit Yusuf"
+__copyright__ = "mqtt-to-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf."
+__credits__ = ["Kasidit Yusuf"]
+__license__ = "GPL"
+__version__ = "1.0"
+__maintainer__ = "Kasidit Yusuf"
+__email__ = "ykasidit@gmail.com"
+__status__ = "Production"
 
 
 class AdTemplate(Advertisement):
