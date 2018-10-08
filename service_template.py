@@ -10,16 +10,18 @@ import dbus.exceptions
 import dbus.mainloop.glib
 import dbus.service
 import functools
+import sys
+import traceback
+import urlparse
+import threading
+
+import paho.mqtt.client as mqtt
 import gatt_server
 import adapters
 from gatt_server import Application
 from gatt_server import Service
 from gatt_server import Characteristic
-import sys
-import traceback
-import ble_service_uuid_list
-import ble_characteristic_uuid_list
-import mqtt_to_gatt_utils
+import bt_assigned_numbers
 
 __author__ = "Kasidit Yusuf"
 __copyright__ = "mqtt-to-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf."
@@ -76,11 +78,11 @@ class ReadNotifyCharacteristic(Characteristic):
 
     ######### Below functions would be used by the app developer (us)
     
-    def __init__(self, bus, index, service, chrc_uuid, initial_value):
+    def __init__(self, bus, index, service, chrc_assigned_number, initial_value):
 
         Characteristic.__init__(
             self, bus, index,
-            chrc_uuid,            
+            chrc_assigned_number,            
             ['read', 'notify'],
             service)
         self.notifying = False
@@ -125,6 +127,92 @@ class ReadNotifyCharacteristic(Characteristic):
 
         self.notifying = False
 
+
+class MqttSrcReadNotifyCharacteristic(ReadNotifyCharacteristic):
+
+    def __init__(self, bus, index, service, chrc_assigned_number, initial_value, mqtt_topic_url):
+
+        self.mqtt_connected = False
+        
+        ReadNotifyCharacteristic.__init__(
+            self, bus, index,
+            service,
+            chrc_assigned_number,            
+            initial_value
+        )
+
+        if mqtt_topic_url is None:
+            print "MqttSrcReadNotifyCharacteristic: mqtt_topic_url is None for chrc_assigned_number 0x%x - omit value updates from mqtt" % (chrc_assigned_number)
+        else:
+            url = urlparse.urlparse(mqtt_topic_url)
+
+            topic = url.path[1:]
+            if not topic:
+                raise Exception("invalid mqtt_server_url - no topic (path) specified: {}".format(mqtt_topic_url))
+
+            mqttc = mqtt.Client()
+            self.mqttc = mqttc
+            # Assign event callbacks
+            mqttc.on_message = self.on_message
+            mqttc.on_connect = self.on_connect
+            mqttc.on_publish = self.on_publish
+            mqttc.on_subscribe = self.on_subscribe
+            mqttc.on_log = self.on_log
+
+            mqttc.username_pw_set(url.username, url.password)
+            
+            print "order mqtt_client connect to:", url            
+            mqttc.connect(url.hostname, url.port)
+            mqttc.subscribe(topic, 0)
+
+            mqtt_thread = threading.Thread(target=self.mqtt_loop, args=())
+            mqtt_thread.start()
+
+        
+    def mqtt_loop(self):
+        if self.mqttc is None:
+            return
+        # Continue the network loop, exit when an error occurs
+        rc = 0
+        while rc == 0:
+            rc = self.mqttc.loop()
+            print("rc: " + str(rc))
+            
+    # Define mqtt event callbacks
+    def on_connect(self, client, userdata, flags, rc):
+        self.mqtt_connected = True
+        print("rc: " + str(rc))
+
+    def on_message(self, client, obj, msg):
+        print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
+
+    def on_publish(self, client, obj, mid):
+        print("mid: " + str(mid))
+
+    def on_subscribe(self, client, obj, mid, granted_qos):
+        print("Subscribed: " + str(mid) + " " + str(granted_qos))
+
+    def on_log(self, client, obj, level, string):
+        print("mqtt_log:", string)
+
+
+# Define event callbacks
+def on_connect(client, userdata, flags, rc):
+    print("rc: " + str(rc))
+
+def on_message(client, obj, msg):
+    print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
+
+def on_publish(client, obj, mid):
+    print("mid: " + str(mid))
+
+def on_subscribe(client, obj, mid, granted_qos):
+    print("Subscribed: " + str(mid) + " " + str(granted_qos))
+
+def on_log(client, obj, level, string):
+    print(string)
+
+
         
     
 def register_app_cb():
@@ -136,21 +224,39 @@ def register_app_error_cb(mainloop, error):
     mainloop.quit()
 
 
-def create_read_notify_service(bus, index, service_uuid, is_primary, chrc_uuid_list, chrc_default_val_list):
+def create_read_notify_service(bus, index, service_assigned_number, is_primary, chrc_to_mqtt_topic_tuple_list):
 
-    mqtt_to_gatt_utils.check_int_list(chrc_uuid_list)
-    mqtt_to_gatt_utils.check_int_list(chrc_default_val_list)
+    # check chrc_to_mqtt_topic_tuple_list - each must be either be an int for static chrc or tuple(int, str) for mqtt_topic triggered chrc
+    chrc_assigned_number_list = []
+    mqtt_topic_url_list = []
+    for entry in chrc_to_mqtt_topic_tuple_list:
+        if isinstance(entry, int):
+            chrc_assigned_number_list.append(entry)
+            mqtt_topic_url_list.append(None)
+        elif isinstance(entry, tuple):
+            if len(entry) != 2:
+                raise Exception("invalid chrc to mqtt_topic_uril tuple len: "+str(entry))
+            else:
+                if isinstance(entry[0], int) and isinstance(entry[1], str):
+                    chrc_assigned_number_list.append(entry[0])
+                    mqtt_topic_url_list.append(entry[1])
+                else:
+                    raise Exception("invalid chrc to mqtt_topic_uril tuple - first must be int, second must be str: "+str(entry))
+        else:
+            raise Exception("invalid chrc to mqtt_topic_uril entry: {} - must be tuple or int: but got type: {}".format(entry, type(entry)))
+    
+    bt_assigned_numbers.check_service_assigned_number(service_assigned_number)
+    bt_assigned_numbers.check_chrc_assigned_number_list(chrc_assigned_number_list)
 
-    if len(chrc_uuid_list) != len(chrc_default_val_list):
-        raise Exception("The specified chrc_uuid_list doesnt have the same length as the specified chrc_default_val_list.")
-        
-    service = Service(bus, index, service_uuid, is_primary)
+    service = Service(bus, index, service_assigned_number, is_primary)
 
     chrc_index = 0
-    for i in range(len(chrc_uuid_list)):
-        chrc_uuid = chrc_uuid_list[i]
-        default_val = chrc_default_val_list[i]
-        chrc = ReadNotifyCharacteristic(bus, chrc_index, service, chrc_uuid, default_val)
+    for i in range(len(chrc_assigned_number_list)):
+
+        chrc_assigned_number = chrc_assigned_number_list[i]
+        mqtt_topic_url = mqtt_topic_url_list[i]
+                
+        chrc = MqttSrcReadNotifyCharacteristic(bus, chrc_index, service, chrc_assigned_number, None, mqtt_topic_url)
         service.add_characteristic(chrc)
         chrc_index += 1
         
@@ -173,3 +279,5 @@ def start_services(mainloop, bus, adapter_name, service_list):
     service_manager.RegisterApplication(app.get_path(), {},
                                     reply_handler=register_app_cb,
                                     error_handler=functools.partial(register_app_error_cb, mainloop))
+
+

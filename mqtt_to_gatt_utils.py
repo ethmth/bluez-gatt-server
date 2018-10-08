@@ -20,9 +20,9 @@ def check_int_list(int_list):
         raise Exception("not a python list")
     if len(int_list) == 0:
         raise Exception("list must have at least one entry")
-    for uuid in int_list:
-        if not isinstance(uuid, int):
-            raise Exception("entry in list not a number: "+str(chrc_uuid))
+    for val in int_list:
+        if not isinstance(val, int):
+            raise Exception("entry in list not a number: "+str(val))
     return
 
 

@@ -1,0 +1,4 @@
+- python mqtt-to-gatt-server.py --service_assigned_number 0x180F --characteristic_assigned_number_list "[(0x2A19, 'mqtt://localhost:1883/test')]"
+
+- when end program ctrlc why thread not stop - call mqttc.close()
+- url can be plain topic - auto prefix mqtt://localhost:1883/

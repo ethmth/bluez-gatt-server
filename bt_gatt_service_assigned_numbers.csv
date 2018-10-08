@@ -1,4 +1,3 @@
-
 Name	Uniform Type Identifier	Assigned Number	Specification
 Generic Access	org.bluetooth.service.generic_access	0x1800	GSS
 Alert Notification Service	org.bluetooth.service.alert_notification	0x1811	GSS
