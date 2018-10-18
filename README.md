@@ -8,7 +8,7 @@ About
 
 Host a BLE GATT Service with Read/Notify Characteristics from a one line bash/terminal command:
 <pre>
-python mqtt-to-gatt-server.py --service_assigned_number "Battery Service" --characteristic_assigned_number_list "[('Battery Level', 'mqtt://localhost:1883/my_battery_level')]
+python mqtt-to-gatt-server.py --service_assigned_number "Battery Service" --characteristic_assigned_number_list "[('Battery Level', 'mqtt://localhost:1883/my_battery_level')]"
 </pre>
 
 Update the characteristics from another (MQTT) mosquitto_pub command:
