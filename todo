@@ -2,3 +2,4 @@
 
 - when end program ctrlc why thread not stop - call mqttc.close()
 - url can be plain topic - auto prefix mqtt://localhost:1883/
+- strings from mqtt parse either starting with 0x or int or string

@@ -244,9 +244,22 @@ def create_read_notify_service(bus, index, service_assigned_number, is_primary, 
                     raise Exception("invalid chrc to mqtt_topic_uril tuple - first must be int, second must be str: "+str(entry))
         else:
             raise Exception("invalid chrc to mqtt_topic_uril entry: {} - must be tuple or int: but got type: {}".format(entry, type(entry)))
-    
-    bt_assigned_numbers.check_service_assigned_number(service_assigned_number)
-    bt_assigned_numbers.check_chrc_assigned_number_list(chrc_assigned_number_list)
+
+    try:
+        bt_assigned_numbers.check_service_assigned_number(service_assigned_number)
+    except:
+        type_, value_, traceback_ = sys.exc_info()
+        exstr = str(traceback.format_exception(type_, value_, traceback_))        
+        print "WARNING: failed to match a known service from specified 'assigned number' - exception:", exstr
+
+
+    try:
+        bt_assigned_numbers.check_chrc_assigned_number_list(chrc_assigned_number_list)
+    except:
+        type_, value_, traceback_ = sys.exc_info()
+        exstr = str(traceback.format_exception(type_, value_, traceback_))        
+        print "WARNING: failed to match a known characteristic from specified 'assigned number' - exception:", exstr
+        
 
     service = Service(bus, index, service_assigned_number, is_primary)
 

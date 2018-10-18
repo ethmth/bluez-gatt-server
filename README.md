@@ -1,17 +1,36 @@
 mqtt-to-gatt-server
 ===================
 
-*Still under dev. NOT working yet.*
-
-
 About
 -----
 
-Host Bluetooth GATT Services with Read/Notify Characteristics from a one line bash/terminal command. Update the characteristic from another command to a local MQTT (mosquitto) server 'topic', or even stream it from a remote MQTT server (that might even be from another BLE or non-BLE sensor/data-source).
+*Still under dev. NOT working yet.*
+
+Host a BLE GATT Service with Read/Notify Characteristics from a one line bash/terminal command:
+<pre>
+python mqtt-to-gatt-server.py --service_assigned_number "Battery Service" --characteristic_assigned_number_list "[('Battery Level', 'mqtt://localhost:1883/my_battery_level')]
+</pre>
+
+Update the characteristics from another (MQTT) mosquitto_pub command:
+<pre>
+mosquitto_pub -t "mqtt://localhost:1883/my_battery_level" -m "99"
+</pre>
+
+Obviously, as the commands above hints, you can also specify remote MQTT servers/topics which might stream from remote sensors/notifications and you might also use various MQTT APIs to update the MQTT topic as alternatives to the 'mosquitto_pub' command too.
 
 This project is a fork of 'python-gatt-server' (https://github.com/Jumperr-labs/python-gatt-server.git) originally by Jumper Labs which in turn is based on 'BlueZ' (http://www.bluez.org/) example code. Credit goes to respective authors and see copyright notices of respective projects for further details.
 
 *Python source Header format of most added files are from: http://web.archive.org/web/20111010053227/http://jaynes.colorado.edu/PythonGuidelines.html#module_formatting (linked from https://stackoverflow.com/questions/1523427/what-is-the-common-header-format-of-python-files).*
+
+Use cases
+----------
+
+- Easily host and update local BLE GATT Services.
+
+- Stream data frome remote notificaions to local BLE GATT Services. For example, if some low-power BLE devices that don't have internet access need to know some data/flag/command from a remote server - they can read that data/flag/command from a BLE Service/Characteristic on this GNU/Linux computer/board instead.
+
+- Mirror/Duplicate remote BLE devices which were already setup to publish to a MQTT server - stream their BLE GATT Service/Characteristic reads/notifications to update the same on this GNU/Linux computer/board running this project. Therefore, mobile apps connect/read/display data from the remote BLE device through this computer/board.
+
 
 Setup
 -----
@@ -19,7 +38,9 @@ Setup
 - Download, compile, install BlueZ 5.50 (./configure, make, sudo make install, sudo service bluetooth restart). Right now, we are currently using Bluez 5.50 with good success so far and no need to enable 'experimental' features. Make sure it is working (try bluetoothctl commands).
 - Make sure python 'pandas' is installed. (sudo pip install pandas)
 - Make sure python 'paho-mqtt' library is installed. (sudo pip install paho-mqtt)
-- Make sure you've install a MQTT server (sudo apt-get install mosquitto), and a MQTT client to test (sudo apt-get install mosquitto-clients). If you never tried this, please go through the great examples at https://www.vultr.com/docs/how-to-install-mosquitto-mqtt-broker-server-on-ubuntu-16-04 - only until the 'Publish a message to topic "test"' topic is fine. (We'll use this to test updating our BLE Characteristics).
+- Make sure you've install a MQTT server (sudo apt-get install mosquitto), and a MQTT client to test (sudo apt-get install mosquitto-clients). *If you never tried this, please go through the examples at https://www.vultr.com/docs/how-to-install-mosquitto-mqtt-broker-server-on-ubuntu-16-04 - only until the 'Publish a message to topic "test"' topic is fine. (We'll use this to test updating our BLE Characteristics).*
+- Make sure python 'pytest' testing library is installed. (sudo pip install pytest)
+- Run 'pytest' command in this directory - make sure all tests have passed.
 - For actual testing the BLE Services - we use, recommend and really want to thank Nordic semi for providing their great free Android app named 'nRF Connect'.
 
 
@@ -74,6 +95,12 @@ Registering GATT application...
 GetManagedObjects
 GATT application registered
 </pre>
+
+
+Updating the Bluetooth GATT Service/Characteristics Assigned Numbers
+--------------------------------------------------------------------
+
+Using a browser, you can copy the 'table' list from https://www.bluetooth.com/specifications/gatt/services and https://www.bluetooth.com/specifications/gatt/characteristics and paste into the files bt_gatt_service_assigned_numbers.csv and bt_gatt_chrc_assigned_numbers.csv respectively. Make sure you run 'pytest' again to test that the csv files are in the correct format.
 
 
 LICENSE
