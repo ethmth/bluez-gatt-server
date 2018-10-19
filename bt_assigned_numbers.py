@@ -2,10 +2,10 @@
 """Provides 'Assigned Number' to 'Name' matching funcs, Pandas DataFrames holding the spec-defined Bluetooth GATT Characteristic, Services 'Assigned Numbers' as related info.
 """
 
-import mqtt_to_gatt_utils
+import utils
 
 __author__ = "Kasidit Yusuf"
-__copyright__ = "mqtt-to-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf."
+__copyright__ = "bluez-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf."
 __credits__ = ["Kasidit Yusuf"]
 __license__ = "GPL"
 __version__ = "1.0"
@@ -28,7 +28,7 @@ def get_assigned_numbers_df(csv_fn):
     #print "get_assigned_numbers_df: csv_fn:", csv_fn
     if csv_fn not in g_df_cache:
         print "reading assigned_numbers_csv:", csv_fn
-        df = mqtt_to_gatt_utils.read_csv_in_module_path_as_df(csv_fn)        
+        df = utils.read_csv_in_module_path_as_df(csv_fn)        
         # convert "Assigned Number" from 'hex string' to int
         df["Assigned Number"] = df["Assigned Number"].apply(lambda x: int(x,16))
         g_df_cache[csv_fn] = df
@@ -64,7 +64,7 @@ def check_service_assigned_number(service_assigned_number):
 
 
 def check_chrc_assigned_number_list(characteristic_assigned_number_list):
-    mqtt_to_gatt_utils.check_int_list(characteristic_assigned_number_list)
+    utils.check_int_list(characteristic_assigned_number_list)
     for chrc in characteristic_assigned_number_list:
         chrc_name = get_gatt_chrc_name_for_assigned_number(chrc)        
         print "Check chrc assigned_number: 0x%x - got matching Name: %s"  % (chrc, chrc_name)

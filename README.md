@@ -1,4 +1,4 @@
-mqtt-to-gatt-server
+bluez-gatt-server
 ===================
 
 About
@@ -6,9 +6,13 @@ About
 
 *Still under dev. NOT working yet.*
 
+Create a Bluetooth Low Energy GATT Service on BlueZ from a single terminal/bash command. Update its values from a single 'mosquitto_pub' (MQTT publish) command. No extra programming. Easy to script, easy to use - [just like in the good old days where commands like 'hciconfig', 'sdptool' and 'rfcomm' roamed the earth](https://github.com/ykasidit/bluez-compassion).
+
+![They don't make them like that any more.](http://www.clearevo.com/300D/300D_small.jpg "They don't make them like that any more.")
+
 Host a BLE GATT Service with Read/Notify Characteristics from a one line bash/terminal command:
 <pre>
-python mqtt-to-gatt-server.py --service_assigned_number "Battery Service" --characteristic_assigned_number_list "[('Battery Level', 'mqtt://localhost:1883/my_battery_level')]"
+python bluez-gatt-server.py --service_assigned_number "Battery Service" --characteristic_assigned_number_list "[('Battery Level', 'mqtt://localhost:1883/my_battery_level')]"
 </pre>
 
 Update the characteristics from another (MQTT) mosquitto_pub command:
@@ -19,6 +23,8 @@ mosquitto_pub -t "mqtt://localhost:1883/my_battery_level" -m "99"
 Obviously, as the commands above hints, you can also specify remote MQTT servers/topics which might stream from remote sensors/notifications and you might also use various MQTT APIs to update the MQTT topic as alternatives to the 'mosquitto_pub' command too.
 
 This project is a fork of 'python-gatt-server' (https://github.com/Jumperr-labs/python-gatt-server.git) originally by Jumper Labs which in turn is based on 'BlueZ' (http://www.bluez.org/) example code. Credit goes to respective authors and see copyright notices of respective projects for further details.
+
+Special thanks to the BlueZ project for providing Bluetooth support to GNU/Linux as well as their easy to program D-Bus APIs - especially from Python - much simpler than the C API in the old days.
 
 *Python source Header format of most added files are from: http://web.archive.org/web/20111010053227/http://jaynes.colorado.edu/PythonGuidelines.html#module_formatting (linked from https://stackoverflow.com/questions/1523427/what-is-the-common-header-format-of-python-files).*
 
@@ -48,7 +54,7 @@ Instructions
 ------------
 
 - Let's try start a local BLE 'Battery Service' withen one 'Battery Level' characteristic. Firstly, let's try run the --help to see how to do this:
-<pre>python mqtt-to-gatt-server.py --help</pre>
+<pre>python bluez-gatt-server.py --help</pre>
 We'd get something like:
 <pre>
 ...
@@ -71,7 +77,7 @@ optional arguments:
 - So we can consult the official bluetooth.com links in the help above to get the assigned numbers for our "Battery Service" service our "Battery Level" characteristic - below is our command:
 
 <pre>
-python mqtt-to-gatt-server.py --service_assigned_number 0x180F --characteristic_assigned_number_list [0x2A19]
+python bluez-gatt-server.py --service_assigned_number 0x180F --characteristic_assigned_number_list [0x2A19]
 </pre>
 
 If all is well, it would show 'GATT application registered' as in below example output:
@@ -106,7 +112,7 @@ Using a browser, you can copy the 'table' list from https://www.bluetooth.com/sp
 LICENSE
 -------
 
-mqtt-to-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf.
+bluez-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf.
 
 Released under the GNU GPL v2 License - see COPYING file (from BlueZ project) for details. This project is a fork of 'python-gatt-server' (https://github.com/Jumperr-labs/python-gatt-server.git) originally by Jumper Labs which is based on 'BlueZ' (http://www.bluez.org/) example code. Credit goes to respective authors and see copyright notices of respective projects for further details.
 

@@ -14,7 +14,7 @@ import advertising
 from advertising import Advertisement
 
 __author__ = "Kasidit Yusuf"
-__copyright__ = "mqtt-to-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf."
+__copyright__ = "bluez-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf."
 __credits__ = ["Kasidit Yusuf"]
 __license__ = "GPL"
 __version__ = "1.0"
