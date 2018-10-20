@@ -48,7 +48,7 @@ def main():
     args = parser.parse_args()
     args_dict = vars(args)
 
-    service_assigned_number = eval(args_dict['service_assigned_number'])
+    service_assigned_number = args_dict['service_assigned_number']
         
     characteristic_assigned_number_list = None    
     characteristic_assigned_number_list = eval(args_dict['characteristic_assigned_number_list'])

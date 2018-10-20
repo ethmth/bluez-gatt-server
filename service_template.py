@@ -13,7 +13,7 @@ import functools
 import sys
 import traceback
 import urlparse
-import threading
+import multiprocessing
 
 import paho.mqtt.client as mqtt
 import gatt_server
@@ -90,12 +90,17 @@ class ReadNotifyCharacteristic(Characteristic):
 
         
     def update_value(self, value):
+        print "update_value:", value
         self.value = value
         if not self.notifying:
+            print "update_value but not notifying so ignore this call"
             return
+        print "update_value calling PropertiesChanged..."
+        value_byte_array = get_value_byte_array(self.value)
+        print "update_value calling PropertiesChanged: value_byte_array:", value_byte_array
         self.PropertiesChanged(
                 gatt_server.GATT_CHRC_IFACE,
-                {'Value': [dbus.Byte(self.value)] }, [])
+                {'Value': value_byte_array }, [])
 
 
     ########### Below funcs would be used/called by the framework
@@ -104,7 +109,7 @@ class ReadNotifyCharacteristic(Characteristic):
         try:
             if self.value is None:
                 print "WARNING: ReadValue called when self.value is None"
-            return [dbus.Byte(self.value)]
+            return get_value_byte_array(self.value)
         except:
             type_, value_, traceback_ = sys.exc_info()
             exstr = str(traceback.format_exception(type_, value_, traceback_))        
@@ -165,7 +170,7 @@ class MqttSrcReadNotifyCharacteristic(ReadNotifyCharacteristic):
             mqttc.connect(url.hostname, url.port)
             mqttc.subscribe(topic, 0)
 
-            mqtt_thread = threading.Thread(target=self.mqtt_loop, args=())
+            mqtt_thread = multiprocessing.Process(target=self.mqtt_loop, args=())
             mqtt_thread.start()
 
         
@@ -181,38 +186,20 @@ class MqttSrcReadNotifyCharacteristic(ReadNotifyCharacteristic):
     # Define mqtt event callbacks
     def on_connect(self, client, userdata, flags, rc):
         self.mqtt_connected = True
-        print("rc: " + str(rc))
+        print("on_connect: " + str(rc))
 
     def on_message(self, client, obj, msg):
-        print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
+        print("on_message: topic: {} qos: {} payload_to_update_chrc_value: {}".format(msg.topic, msg.qos, msg.payload))
+        self.update_value(msg.payload)
 
     def on_publish(self, client, obj, mid):
-        print("mid: " + str(mid))
+        print("on_publish: " + str(mid))
 
     def on_subscribe(self, client, obj, mid, granted_qos):
-        print("Subscribed: " + str(mid) + " " + str(granted_qos))
+        print("on_subscribe: " + str(mid) + " " + str(granted_qos))
 
     def on_log(self, client, obj, level, string):
-        print("mqtt_log:", string)
-
-
-# Define event callbacks
-def on_connect(client, userdata, flags, rc):
-    print("rc: " + str(rc))
-
-def on_message(client, obj, msg):
-    print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
-
-def on_publish(client, obj, mid):
-    print("mid: " + str(mid))
-
-def on_subscribe(client, obj, mid, granted_qos):
-    print("Subscribed: " + str(mid) + " " + str(granted_qos))
-
-def on_log(client, obj, level, string):
-    print(string)
-
-
+        print("on_log:", string)
         
     
 def register_app_cb():
@@ -226,24 +213,33 @@ def register_app_error_cb(mainloop, error):
 
 def create_read_notify_service(bus, index, service_assigned_number, is_primary, chrc_to_mqtt_topic_tuple_list):
 
+    if isinstance(service_assigned_number, str):
+        print "provided service_assigned_number is a string - trying to match known services for the assigned_number..."
+        service_assigned_number = bt_assigned_numbers.get_gatt_service_assigned_number_for_name(service_assigned_number)
+        print "provided service_assigned_number is a string - got match: 0x%x" % service_assigned_number
+
     # check chrc_to_mqtt_topic_tuple_list - each must be either be an int for static chrc or tuple(int, str) for mqtt_topic triggered chrc
     chrc_assigned_number_list = []
     mqtt_topic_url_list = []
     for entry in chrc_to_mqtt_topic_tuple_list:
-        if isinstance(entry, int):
-            chrc_assigned_number_list.append(entry)
-            mqtt_topic_url_list.append(None)
-        elif isinstance(entry, tuple):
+        if isinstance(entry, tuple):
             if len(entry) != 2:
                 raise Exception("invalid chrc to mqtt_topic_uril tuple len: "+str(entry))
             else:
+                
+                if isinstance(entry[0], str):
+                    print "provided chrc_assigned_number: '%s' is a string - trying to match known chrc for the assigned_number..." % entry[0]
+                    chrc_assigned_number = bt_assigned_numbers.get_gatt_chrc_assigned_number_for_name(entry[0])
+                    print "provided chrc_assigned_number is a string - got match: 0x%x" % chrc_assigned_number
+                    entry = (chrc_assigned_number, entry[1])  # create updated entry
+                    
                 if isinstance(entry[0], int) and isinstance(entry[1], str):
                     chrc_assigned_number_list.append(entry[0])
                     mqtt_topic_url_list.append(entry[1])
                 else:
                     raise Exception("invalid chrc to mqtt_topic_uril tuple - first must be int, second must be str: "+str(entry))
         else:
-            raise Exception("invalid chrc to mqtt_topic_uril entry: {} - must be tuple or int: but got type: {}".format(entry, type(entry)))
+            raise Exception("invalid chrc to mqtt_topic_uril entry: {} - must be tuple but got type: {}".format(entry, type(entry)))
 
     try:
         bt_assigned_numbers.check_service_assigned_number(service_assigned_number)

@@ -36,21 +36,42 @@ def get_assigned_numbers_df(csv_fn):
     return g_df_cache[csv_fn]
 
 
-def get_assigned_number_name(csv, assigned_number):
+def get_name_for_assigned_number(csv, assigned_number):
     #print "get_assigned_number_name csv:", csv
     df = get_assigned_numbers_df(csv)
     df = df[df["Assigned Number"] == assigned_number]
     if len(df) == 1:
         return df.iloc[0]["Name"]
-    return None
+    if len(df) > 1:
+        raise Exception("Got more than 1 match for provided assigned_number: 0x%x - likely invalid csv list" % assigned_number)
+    raise Exception("Failed to find match for provided assigned_number: 0x%x" % assigned_number)
+
+
+
+def get_assigned_number_for_name(csv, name):
+    #print "get_assigned_number_name csv:", csv
+    df = get_assigned_numbers_df(csv)
+    df = df[df["Name"] == name]
+    if len(df) == 1:
+        return df.iloc[0]["Assigned Number"]
+    if len(df) > 1:
+        raise Exception("Got more than 1 match for provided name: %s - likely invalid csv list" % name)
+    raise Exception("Failed to find match for provided name: %s" % name)
 
 
 def get_gatt_chrc_name_for_assigned_number(assigned_number):
-    return get_assigned_number_name(BT_GATT_CHRC_ASSIGNED_NUMBERS_CSV, assigned_number)
-
+    return get_name_for_assigned_number(BT_GATT_CHRC_ASSIGNED_NUMBERS_CSV, assigned_number)
     
 def get_gatt_service_name_for_assigned_number(assigned_number):
-    return get_assigned_number_name(BT_GATT_SERVICE_ASSIGNED_NUMBERS_CSV, assigned_number)
+    return get_name_for_assigned_number(BT_GATT_SERVICE_ASSIGNED_NUMBERS_CSV, assigned_number)
+
+
+def get_gatt_chrc_assigned_number_for_name(name):
+    return get_assigned_number_for_name(BT_GATT_CHRC_ASSIGNED_NUMBERS_CSV, name)
+
+
+def get_gatt_service_assigned_number_for_name(name):
+    return get_assigned_number_for_name(BT_GATT_SERVICE_ASSIGNED_NUMBERS_CSV, name)
 
 
 def check_service_assigned_number(service_assigned_number):
