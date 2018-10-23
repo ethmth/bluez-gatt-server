@@ -10,10 +10,12 @@ Host a BLE GATT Service with Read/Notify Characteristics from a one line bash/te
 python bluez-gatt-server.py --service_assigned_number "Battery Service" --characteristic_assigned_number_list "[('Battery Level', 'mqtt://localhost:1883/my_battery_level')]"
 </pre>
 
-Update the characteristics using a hex string from another (MQTT) mosquitto_pub command - let's try update the battery percent to 17% - this is a one-byte hex string of '11':
+Update (initialize) the characteristics using a hex string from another (MQTT) mosquitto_pub command - let's try update the battery percent to 17% - this is a one-byte hex string of '11':
 <pre>
-mosquitto_pub -t "mqtt://localhost:1883/my_battery_level" -m '11'
+mosquitto_pub -t "my_battery_level" -m "11"
 </pre>
+
+Now, use 'nRF Connect' BLE app (or similar) to read this value from phone! Done!
 
 Obviously, as the commands above hints, you can also specify remote MQTT servers/topics which might stream from remote sensors/notifications and you might also use various MQTT APIs to update the MQTT topic as alternatives to the 'mosquitto_pub' command too.
 
