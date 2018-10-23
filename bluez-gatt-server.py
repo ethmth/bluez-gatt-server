@@ -12,6 +12,8 @@ except ImportError:
   import gobject as GObject
 import argparse
 import service_template
+import ad_template
+import bt_assigned_numbers
 
 __author__ = "Kasidit Yusuf"
 __copyright__ = "mqtt-to-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf."
@@ -37,7 +39,7 @@ def main():
 
     parser.add_argument('--mqtt_host', type=str, help='MQTT Host URL', default='localhost')
 
-    parser.add_argument('--service_assigned_number', type=str, help='BLE service ASSIGNED_NUMBER in hex starting with 0x - see https://www.bluetooth.com/specifications/gatt/services for the full list - e.g., "Battery Service" would be: 0x180F', required=True)
+    parser.add_argument('--service_assigned_number', type=str, help='BLE service NAME - e.g., "Battery Service" -OR- ASSIGNED_NUMBER in hex starting with 0x - see https://www.bluetooth.com/specifications/gatt/services for the full list - e.g., "Battery Service" would be: 0x180F', required=True)
 
     parser.add_argument('--characteristic_assigned_number_list', type=str, help='Python-sytaxed list of Bluetooth service ASSIGNED_NUMBER in hex starting with 0x - see https://www.bluetooth.com/specifications/gatt/characteristics for the full list - e.g., A list containing one characteristic of "Battery Level" would be: [0x2A19]', required=True)
     
@@ -49,6 +51,8 @@ def main():
     args_dict = vars(args)
 
     service_assigned_number = args_dict['service_assigned_number']
+    if service_assigned_number.startswith("0x"):
+        service_assigned_number = eval(service_assigned_number)
         
     characteristic_assigned_number_list = None    
     characteristic_assigned_number_list = eval(args_dict['characteristic_assigned_number_list'])
@@ -73,9 +77,21 @@ def main():
         characteristic_assigned_number_list
     )
 
+    ### start BLE ad (+power on device)
+    service_assigned_number_hex_string = None
+    if isinstance(service_assigned_number, str):
+        print "prepare ad: service_assigned_number is a str - convert to int by name lookup"
+        service_assigned_number = bt_assigned_numbers.get_gatt_service_assigned_number_for_name(service_assigned_number)
+        
+    service_assigned_number_hex_string = "0x%x" % service_assigned_number
+    print "prepare ad: got service_assigned_number:", service_assigned_number
+    
+    ad_template.start_ad(mainloop, bus, args_dict['adapter_name'], [service_assigned_number_hex_string])
+
     ### start BLE service
-   
-    service_template.start_services(mainloop, bus, args_dict['adapter_name'], [service])
+    
+    service_template.start_services(mainloop, bus, args_dict['adapter_name'], [service])    
+    
     mainloop.run()
 
     # TODO: run another thread that reads from the mqtt server and updates the chrc on changes

@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 """Provides simple ways to define and start BLE advertisements.
-
-Note: This file is not used right now as BlueZ already seems to maintain the advertisements based on defined services already.
 """
 
 import dbus
@@ -41,7 +39,7 @@ class AdTemplate(Advertisement):
         
         for service_assigned_number in service_assigned_number_list:
             print "adding service_assigned_number:", service_assigned_number
-            self.add_service_assigned_number(service_assigned_number)
+            self.add_service_uuid(service_assigned_number)
         self.add_manufacturer_data(manuf_code, manuf_data)
         self.add_service_data(service_assigned_number, service_data)
         self.include_tx_power = include_tx_power

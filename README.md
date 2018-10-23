@@ -3,21 +3,16 @@ bluez-gatt-server
 
 About
 -----
-
-*Still under dev. NOT working yet.*
-
 Create a Bluetooth Low Energy GATT Service on BlueZ from a single terminal/bash command. Update its values from a single 'mosquitto_pub' (MQTT publish) command. No extra programming. Easy to script, easy to use - [just like in the good old days where commands like 'hciconfig', 'sdptool' and 'rfcomm' roamed the earth](https://github.com/ykasidit/bluez-compassion).
-
-![They don't make them like that any more.](http://www.clearevo.com/300D/300D_small.jpg "They don't make them like that any more.")
 
 Host a BLE GATT Service with Read/Notify Characteristics from a one line bash/terminal command:
 <pre>
 python bluez-gatt-server.py --service_assigned_number "Battery Service" --characteristic_assigned_number_list "[('Battery Level', 'mqtt://localhost:1883/my_battery_level')]"
 </pre>
 
-Update the characteristics from another (MQTT) mosquitto_pub command:
+Update the characteristics using a hex string from another (MQTT) mosquitto_pub command - let's try update the battery percent to 17% - this is a one-byte hex string of '11':
 <pre>
-mosquitto_pub -t "mqtt://localhost:1883/my_battery_level" -m "99"
+mosquitto_pub -t "mqtt://localhost:1883/my_battery_level" -m '11'
 </pre>
 
 Obviously, as the commands above hints, you can also specify remote MQTT servers/topics which might stream from remote sensors/notifications and you might also use various MQTT APIs to update the MQTT topic as alternatives to the 'mosquitto_pub' command too.
@@ -26,7 +21,8 @@ This project is a fork of 'python-gatt-server' (https://github.com/Jumperr-labs/
 
 Special thanks to the BlueZ project for providing Bluetooth support to GNU/Linux as well as their easy to program D-Bus APIs - especially from Python - much simpler than the C API in the old days.
 
-*Python source Header format of most added files are from: http://web.archive.org/web/20111010053227/http://jaynes.colorado.edu/PythonGuidelines.html#module_formatting (linked from https://stackoverflow.com/questions/1523427/what-is-the-common-header-format-of-python-files).*
+![They don't make them like that any more.](http://www.clearevo.com/300D/300D_small.jpg "They don't make them like that any more.")
+
 
 Use cases
 ----------

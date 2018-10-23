@@ -13,7 +13,7 @@ import functools
 import sys
 import traceback
 import urlparse
-import multiprocessing
+import threading
 
 import paho.mqtt.client as mqtt
 import gatt_server
@@ -86,38 +86,50 @@ class ReadNotifyCharacteristic(Characteristic):
             ['read', 'notify'],
             service)
         self.notifying = False
-        self.value = initial_value
 
+        if initial_value is not None:
+            self.value_buffer = buffer_to_dbus_byte_list(hex_str_decode_to_buffer(initial_value))
+        else:
+            self.value_buffer = None
+
+    # value: hex string that can be .decode('hex') via python - example: "10" (for a one-byte value of 16)
         
-    def update_value(self, value):
-        print "update_value:", value
-        self.value = value
-        if not self.notifying:
-            print "update_value but not notifying so ignore this call"
-            return
-        print "update_value calling PropertiesChanged..."
-        value_byte_array = get_value_byte_array(self.value)
-        print "update_value calling PropertiesChanged: value_byte_array:", value_byte_array
-        self.PropertiesChanged(
+    def update_value(self, new_value):
+
+        print "update_value:", new_value
+        try:            
+            self.value_buffer = buffer_to_dbus_byte_list(hex_str_decode_to_buffer(new_value))
+            print "update_value calling PropertiesChanged - new self.value_buffer hex dump:", self.value_buffer
+            
+            if not self.notifying:
+                print "update_value but not notifying so ignore this call"
+                return
+            
+            self.PropertiesChanged(
                 gatt_server.GATT_CHRC_IFACE,
-                {'Value': value_byte_array }, [])
+                {
+                    'Value': self.value_buffer
+                },
+                []
+            )
 
-
-    ########### Below funcs would be used/called by the framework
-    
-    def ReadValue(self, options):
-        try:
-            if self.value is None:
-                print "WARNING: ReadValue called when self.value is None"
-            return get_value_byte_array(self.value)
         except:
             type_, value_, traceback_ = sys.exc_info()
             exstr = str(traceback.format_exception(type_, value_, traceback_))        
-            print "WARNING: ReadValue - exception:", exstr
-        return None
+            print "WARNING: update_value - exception:", exstr
+
+    
+    def ReadValue(self, options):
+        print "ReadValue: enter"
+        if self.value_buffer is None:
+            print "WARNING: ReadValue called when self.value_buffer is None"
+            return None
+
+        return self.value_buffer
 
     
     def StartNotify(self):
+        print "StartNotify: enter"
         if self.notifying:
             print('Already notifying, nothing to do')
             return
@@ -126,6 +138,7 @@ class ReadNotifyCharacteristic(Characteristic):
 
         
     def StopNotify(self):
+        print "StopNotify: enter"
         if not self.notifying:
             print('Not notifying, nothing to do')
             return
@@ -147,7 +160,7 @@ class MqttSrcReadNotifyCharacteristic(ReadNotifyCharacteristic):
         )
 
         if mqtt_topic_url is None:
-            print "MqttSrcReadNotifyCharacteristic: mqtt_topic_url is None for chrc_assigned_number 0x%x - omit value updates from mqtt" % (chrc_assigned_number)
+            print "WARNING: MqttSrcReadNotifyCharacteristic: mqtt_topic_url is None for chrc_assigned_number 0x%x - omit value updates from mqtt" % (chrc_assigned_number)
         else:
             url = urlparse.urlparse(mqtt_topic_url)
 
@@ -170,7 +183,8 @@ class MqttSrcReadNotifyCharacteristic(ReadNotifyCharacteristic):
             mqttc.connect(url.hostname, url.port)
             mqttc.subscribe(topic, 0)
 
-            mqtt_thread = multiprocessing.Process(target=self.mqtt_loop, args=())
+            mqtt_thread = threading.Thread(target=self.mqtt_loop, args=())
+            mqtt_thread.daemon = True
             mqtt_thread.start()
 
         
@@ -210,6 +224,29 @@ def register_app_error_cb(mainloop, error):
     print('Failed to register application: ' + str(error))
     mainloop.quit()
 
+    
+def hex_str_decode_to_buffer(value):
+    if not isinstance(value, str):
+        raise Exception("hex_str_decode_to_buffer: invalid value is not 'str' - value type:", type(value))
+    
+    value = value.strip()
+    value = value.replace(' ','')
+    value = value.replace('0x','')
+
+    retstr = value.decode('hex')
+    return retstr
+
+    
+def buffer_to_dbus_byte_list(bufferstr):
+    # generate dbus_byte_list
+    dbus_byte_list = []
+    for char in bufferstr:
+        dbus_byte_list.append(dbus.Byte(char))
+
+    return dbus_byte_list
+        
+    
+
 
 def create_read_notify_service(bus, index, service_assigned_number, is_primary, chrc_to_mqtt_topic_tuple_list):
 
@@ -224,7 +261,7 @@ def create_read_notify_service(bus, index, service_assigned_number, is_primary, 
     for entry in chrc_to_mqtt_topic_tuple_list:
         if isinstance(entry, tuple):
             if len(entry) != 2:
-                raise Exception("invalid chrc to mqtt_topic_uril tuple len: "+str(entry))
+                raise Exception("invalid chrc to mqtt_topic_url tuple len: "+str(entry))
             else:
                 
                 if isinstance(entry[0], str):
@@ -237,9 +274,9 @@ def create_read_notify_service(bus, index, service_assigned_number, is_primary, 
                     chrc_assigned_number_list.append(entry[0])
                     mqtt_topic_url_list.append(entry[1])
                 else:
-                    raise Exception("invalid chrc to mqtt_topic_uril tuple - first must be int, second must be str: "+str(entry))
+                    raise Exception("invalid chrc to mqtt_topic_url tuple - first must be int, second must be str: "+str(entry))
         else:
-            raise Exception("invalid chrc to mqtt_topic_uril entry: {} - must be tuple but got type: {}".format(entry, type(entry)))
+            raise Exception("invalid chrc to mqtt_topic_url entry: {} - must be tuple but got type: {}".format(entry, type(entry)))
 
     try:
         bt_assigned_numbers.check_service_assigned_number(service_assigned_number)
