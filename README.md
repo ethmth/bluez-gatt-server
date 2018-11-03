@@ -35,7 +35,7 @@ Now, use 'nRF Connect' BLE app (or similar) to read this 'battery level' charact
 
 ![](nrf_connect_read_screenshot.png)
 
-Then, press the 'subscribe notifications' button, and update the value to 16 on computer:
+Then, press the 'subscribe notifications' button (three down arrows), and update the value to 16 on computer:
 
 `mosquitto_pub -t "my_battery_level" -m "10"`
 
