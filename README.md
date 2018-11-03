@@ -26,6 +26,7 @@ After it's running, in another terminal, we can now update/change the characteri
 `mosquitto_pub -t "my_battery_level" -m "11"`
 
 You can use the `bc` command in most GNU/Linux systems to help calculate the 1-byte hex value for us too - for example let's try update the battery percent to the same 17% value but now using bc:
+
 `mosquitto_pub -t "my_battery_level" -m $(echo "obase=16; 17" |bc)`
 
 (The 'default_val' of battery level specified in above csv is in the same format: so hexdump 64 means 100 so you'd get battery level 100% read if you didn't update the value via mqtt first...)
