@@ -31,18 +31,19 @@ def main():
     ### define options/args
 
     parser = argparse.ArgumentParser(
-        description="mqtt-to-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf.\nReleased under the GNU GPL v2 License - see COPYING file (from BlueZ project) for details. This project is a fork of 'python-gatt-server' (https://github.com/Jumperr-labs/python-gatt-server.git) originally by Jumper Labs which is based on 'BlueZ' (http://www.bluez.org/) example code. Credit goes to respective authors and see copyright notices of respective projects for further details.",
-        usage="Use mqtt-to-gatt-server to define and start a Bluetooth Low Energy (BLE) service with read/notify characteristics. The characteristic values would be initilized and updated from the specified 'MQTT server and topic'."
+        description='''mqtt-to-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf.\nReleased under the GNU GPL v2 License - see COPYING file (from BlueZ project) for details. This project is a fork of 'python-gatt-server' (https://github.com/Jumperr-labs/python-gatt-server.git) originally by Jumper Labs which is based on 'BlueZ' (http://www.bluez.org/) example code. Credit goes to respective authors and see copyright notices of respective projects for further details. Fore more info and examples - please visit: https://github.com/ykasidit/bluez-gatt-server
+''',
+        usage='''Use mqtt-to-gatt-server to define and start a Bluetooth Low Energy (BLE) service with read/notify characteristics. The characteristic values would be initilized and updated from the specified 'MQTT server and topic'. For more details, run: python bluez-gatt-server.py --help.
+'''
     )
 
     parser.add_argument('-a', '--adapter-name', type=str, help='Adapter name', default='')
 
     parser.add_argument('--mqtt_host', type=str, help='MQTT Host URL', default='localhost')
 
-    parser.add_argument('--service_assigned_number', type=str, help='BLE service NAME - e.g., "Battery Service" -OR- ASSIGNED_NUMBER in hex starting with 0x - see https://www.bluetooth.com/specifications/gatt/services for the full list - e.g., "Battery Service" would be: 0x180F', required=True)
+    parser.add_argument('--service_assigned_number', type=str, help='ASSIGNED_NUMBER in hex starting with 0x or exact NAME in spec like "Battery Service" - see https://www.bluetooth.com/specifications/gatt/services for the full list - e.g., "Battery Service" would be: 0x180F', required=True)
 
-    parser.add_argument('--characteristic_assigned_number_list', type=str, help='Python-sytaxed list of Bluetooth service ASSIGNED_NUMBER in hex starting with 0x - see https://www.bluetooth.com/specifications/gatt/characteristics for the full list - e.g., A list containing one characteristic of "Battery Level" would be: [0x2A19]', required=True)
-    
+    parser.add_argument('--characteristic_assigned_number_list', type=str, help='''Python-sytaxed list of tuples of (Bluetooth service ASSIGNED_NUMBER in hex starting with 0x or exact NAME in spec like 'Battery Level', MQTT topic URL) - see https://www.bluetooth.com/specifications/gatt/characteristics for the full list - e.g., A list containing one characteristic of "Battery Level" would be: [(0x2A19, 'mqtt://localhost:1883/my_battery_level')] - Remember to quickly 'update' the value via MQTT to initialize the values of each characteristic otherwise it can fail on reads as the default value is a one byte zero value.''', required=True)    
 
     ### parse/check arguments
 

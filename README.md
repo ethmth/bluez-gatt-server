@@ -10,26 +10,24 @@ Easy to use
 -----------
 
 Host a BLE GATT Service with Read/Notify Characteristics from a one line bash/terminal command:
-<pre>
+`
 python bluez-gatt-server.py --service_assigned_number "Battery Service" --characteristic_assigned_number_list "[('Battery Level', 'mqtt://localhost:1883/my_battery_level')]"
-</pre>
+`
 
-Update (initialize) the characteristics using a hex string from another (MQTT) mosquitto_pub command - let's try update the battery percent to 17% - this is a one-byte hex string of '11':
-<pre>
-mosquitto_pub -t "my_battery_level" -m "11"
-</pre>
+Now we must Update (initialize) the characteristics using a hex string from another (MQTT) mosquitto_pub command (this is important otherwise reads can fail as the default value is a one byte zero value that might not match your characteristic's spec) - let's try update the battery percent to 17% - this is a one-byte hex string of '11':
+`mosquitto_pub -t "my_battery_level" -m "11"`
 
-(You can use 'bc' to calculate the 1-byte hex value of 17% too like: <pre>"obase=16; 17" | bc</pre> instead of calculating '11'.)
+(You can use 'bc' to calculate the 1-byte hex value of 17% too like: `"obase=16; 17" | bc` instead of calculating '11'.)
 
 Now, use 'nRF Connect' BLE app (or similar) to read this 'battery level' characteristic from phone! Yes, it would show 17%.
 Then, press the 'subscribe notifications' button, and update the value to 16 on computer:
-<pre>mosquitto_pub -t "my_battery_level" -m "10"</pre>
+`mosquitto_pub -t "my_battery_level" -m "10"`
 
 You'd see the value update to 16% in the phone app instantly!
 
 Done - in a similar manner - you can now easily script to create and update your BLE services!
 
-In above example, we use a one-byte length hex value to update the characteristic because it is declared as a 'uint8' in the Bluetooth specs - [see this link](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.battery_level.xml&u=org.bluetooth.characteristic.battery_level.xml) - but for other characteristics it can be multiple bytes and might have to pass through some formulas first as per the spec.)
+In above example, we use a one-byte length hex value to update the characteristic because it is declared as a 'uint8' in the Bluetooth specs - [see this link](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.battery_level.xml&u=org.bluetooth.characteristic.battery_level.xml) - but for other characteristics it can be multiple bytes and might have to pass through some formulas first as per the spec of that server >> characteristic.)
 
 Obviously, as the commands above hints, you can also specify remote MQTT servers/topics which might stream from remote sensors/notifications and you might also use various MQTT APIs to update the MQTT topic as alternatives to the 'mosquitto_pub' command too.
 
@@ -50,6 +48,7 @@ Setup
 - Make sure you've install a MQTT server (sudo apt-get install mosquitto), and a MQTT client to test (sudo apt-get install mosquitto-clients). *If you never tried this, please go through the examples at https://www.vultr.com/docs/how-to-install-mosquitto-mqtt-broker-server-on-ubuntu-16-04 - only until the 'Publish a message to topic "test"' topic is fine. (We'll use this to test updating our BLE Characteristics).*
 - Make sure python 'pytest' testing library is installed. (sudo pip install pytest)
 - Run 'pytest' command in this directory - make sure all tests have passed.
+- Run `python bluez-gatt-server.py --help` and read through it to see how to use each option.
 - For actual testing the BLE Services - we use, recommend and really want to thank Nordic semi for providing their great free Android app named 'nRF Connect'.
 
 

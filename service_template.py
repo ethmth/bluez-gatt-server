@@ -302,7 +302,7 @@ def create_read_notify_service(bus, index, service_assigned_number, is_primary, 
         chrc_assigned_number = chrc_assigned_number_list[i]
         mqtt_topic_url = mqtt_topic_url_list[i]
                 
-        chrc = MqttSrcReadNotifyCharacteristic(bus, chrc_index, service, chrc_assigned_number, None, mqtt_topic_url)
+        chrc = MqttSrcReadNotifyCharacteristic(bus, chrc_index, service, chrc_assigned_number, "00", mqtt_topic_url)
         service.add_characteristic(chrc)
         chrc_index += 1
         
