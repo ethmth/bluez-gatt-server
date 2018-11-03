@@ -13,13 +13,15 @@ Host a BLE GATT Service with Read/Notify Characteristics from a one line bash/te
 
 `python bluez-gatt-server.py --service_assigned_number "Battery Service" --characteristics_table_csv "example_batt_chrc.csv"`
 
+(This can fail with `Failed to register advertisement: org.bluez.Error.Failed: Failed to register advertisement` if the connected BLE device hasn't disconnected yet)
+
 The csv defined as:
 <pre>
 assigned_number,mqtt_url,default_val_hexdump
 Battery Level,mqtt://localhost:1883/my_battery_level,00
 </pre>
 
-After it's running, we can now update/change the characteristic's value using a hex string from another (MQTT) mosquitto_pub command (this is important otherwise reads can fail as the default value is a one byte zero value that might not match your characteristic's spec) - let's try update the battery percent to 17% - this is a one-byte hex string of '11':
+After it's running, in another terminal, we can now update/change the characteristic's value using a hex string from another (MQTT) mosquitto_pub command (this is important otherwise reads can fail as the default value is a one byte zero value that might not match your characteristic's spec) - let's try update the battery percent to 17% - this is a one-byte hex string of '11':
 
 `mosquitto_pub -t "my_battery_level" -m "11"`
 
