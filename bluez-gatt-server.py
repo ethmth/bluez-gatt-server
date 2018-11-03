@@ -43,20 +43,16 @@ def main():
 
     parser.add_argument('--service_assigned_number', type=str, help='ASSIGNED_NUMBER in hex starting with 0x or exact NAME in spec like "Battery Service" - see https://www.bluetooth.com/specifications/gatt/services for the full list - e.g., "Battery Service" would be: 0x180F', required=True)
 
-    parser.add_argument('--characteristic_assigned_number_list', type=str, help='''Python-sytaxed list of tuples of (Bluetooth service ASSIGNED_NUMBER in hex starting with 0x or exact NAME in spec like 'Battery Level', MQTT topic URL) - see https://www.bluetooth.com/specifications/gatt/characteristics for the full list - e.g., A list containing one characteristic of "Battery Level" would be: [(0x2A19, 'mqtt://localhost:1883/my_battery_level')] - Remember to quickly 'update' the value via MQTT to initialize the values of each characteristic otherwise it can fail on reads as the default value is a one byte zero value.''', required=True)    
+    parser.add_argument('--characteristics_table_csv', type=str, help='''{}'''.format(service_template.CHRC_TABLE_DESCRIPTION), required=True)    
 
     ### parse/check arguments
 
-    print "Getting args..."
     args = parser.parse_args()
     args_dict = vars(args)
 
     service_assigned_number = args_dict['service_assigned_number']
     if service_assigned_number.startswith("0x"):
-        service_assigned_number = eval(service_assigned_number)
-        
-    characteristic_assigned_number_list = None    
-    characteristic_assigned_number_list = eval(args_dict['characteristic_assigned_number_list'])
+        service_assigned_number = int(service_assigned_number[2:], 16)
     
     ### prepare dbus stuff
 
@@ -75,7 +71,7 @@ def main():
         0,
         service_assigned_number,
         True,
-        characteristic_assigned_number_list
+        args_dict['characteristics_table_csv']
     )
 
     ### start BLE ad (+power on device)

@@ -1,0 +1,2 @@
+assigned_number,mqtt_url,default_val_hexdump
+Battery Level,mqtt://localhost:1883/my_battery_level,64

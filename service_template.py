@@ -16,6 +16,7 @@ import urlparse
 import threading
 
 import paho.mqtt.client as mqtt
+import pandas as pd
 import gatt_server
 import adapters
 from gatt_server import Application
@@ -31,6 +32,16 @@ __version__ = "1.0"
 __maintainer__ = "Kasidit Yusuf"
 __email__ = "ykasidit@gmail.com"
 __status__ = "Production"
+
+CHRC_TABLE_REQUIRED_COLS = ["assigned_number", "mqtt_url" ,"default_val_hexdump"]
+
+CHRC_TABLE_DESCRIPTION = '''A csv file holding a table defining the characteristics.
+
+Required columns: '''+str(CHRC_TABLE_REQUIRED_COLS)+'''
+  - The 'assigned_number' is the Bluetooth Characteristic ASSIGNED_NUMBER in hex starting with 0x or exact NAME in spec like 'Battery Level' - see https://www.bluetooth.com/specifications/gatt/characteristics for the full list.
+  - The 'mqtt_url' is the MQTT topic url to take value update hex strings from.
+  - The 'default_val_hexdump' shall be a hex dump (without 0x) describing the default value octets - e.g., '11' for a one byte (uint8) value of 17, '00 01' for a two byte (uint16) little endian value of 256.
+ '''
 
 
 class AppTemplate(Application):
@@ -159,8 +170,8 @@ class MqttSrcReadNotifyCharacteristic(ReadNotifyCharacteristic):
             initial_value
         )
 
-        if mqtt_topic_url is None:
-            print "WARNING: MqttSrcReadNotifyCharacteristic: mqtt_topic_url is None for chrc_assigned_number 0x%x - omit value updates from mqtt" % (chrc_assigned_number)
+        if not mqtt_topic_url:
+            print "WARNING: MqttSrcReadNotifyCharacteristic: mqtt_topic_url is empty for chrc_assigned_number 0x%x - omit value updates from mqtt" % (chrc_assigned_number)
         else:
             url = urlparse.urlparse(mqtt_topic_url)
 
@@ -244,40 +255,36 @@ def buffer_to_dbus_byte_list(bufferstr):
         dbus_byte_list.append(dbus.Byte(char))
 
     return dbus_byte_list
-        
-    
 
 
-def create_read_notify_service(bus, index, service_assigned_number, is_primary, chrc_to_mqtt_topic_tuple_list):
+def create_read_notify_service(bus, index, service_assigned_number, is_primary, chrc_table_arg):
 
     if isinstance(service_assigned_number, str):
         print "provided service_assigned_number is a string - trying to match known services for the assigned_number..."
         service_assigned_number = bt_assigned_numbers.get_gatt_service_assigned_number_for_name(service_assigned_number)
         print "provided service_assigned_number is a string - got match: 0x%x" % service_assigned_number
 
-    # check chrc_to_mqtt_topic_tuple_list - each must be either be an int for static chrc or tuple(int, str) for mqtt_topic triggered chrc
-    chrc_assigned_number_list = []
-    mqtt_topic_url_list = []
-    for entry in chrc_to_mqtt_topic_tuple_list:
-        if isinstance(entry, tuple):
-            if len(entry) != 2:
-                raise Exception("invalid chrc to mqtt_topic_url tuple len: "+str(entry))
-            else:
-                
-                if isinstance(entry[0], str):
-                    print "provided chrc_assigned_number: '%s' is a string - trying to match known chrc for the assigned_number..." % entry[0]
-                    chrc_assigned_number = bt_assigned_numbers.get_gatt_chrc_assigned_number_for_name(entry[0])
-                    print "provided chrc_assigned_number is a string - got match: 0x%x" % chrc_assigned_number
-                    entry = (chrc_assigned_number, entry[1])  # create updated entry
-                    
-                if isinstance(entry[0], int) and isinstance(entry[1], str):
-                    chrc_assigned_number_list.append(entry[0])
-                    mqtt_topic_url_list.append(entry[1])
-                else:
-                    raise Exception("invalid chrc to mqtt_topic_url tuple - first must be int, second must be str: "+str(entry))
-        else:
-            raise Exception("invalid chrc to mqtt_topic_url entry: {} - must be tuple but got type: {}".format(entry, type(entry)))
+    chrc_df = None
+    if chrc_table_arg:
+        # it's a csv file
+        sep = ","
+        with open(chrc_table_arg, 'r') as readf:
+            if "\t" in readf.read():
+                sep = "\t"
+        chrc_df = pd.read_csv(chrc_table_arg, sep=sep, dtype=str)
+    
+    for required_col in CHRC_TABLE_REQUIRED_COLS:
+        if required_col not in chrc_df.columns:
+            raise Exception("supplied config dataframe is missing required column: {}".format(required_col))
 
+    # check assgined_number rows dont dont start with 0x assume they're chrc 'NAME' in spec and try match them
+    needs_remap_mask = ~chrc_df.assigned_number.str.startswith("0x")
+    chrc_df.loc[needs_remap_mask, "assigned_number"] = chrc_df.loc[needs_remap_mask, "assigned_number"].apply(
+        bt_assigned_numbers.get_gatt_chrc_assigned_number_for_name
+    )
+
+    print "read characteristics table:\n", chrc_df
+    
     try:
         bt_assigned_numbers.check_service_assigned_number(service_assigned_number)
     except:
@@ -285,26 +292,21 @@ def create_read_notify_service(bus, index, service_assigned_number, is_primary, 
         exstr = str(traceback.format_exception(type_, value_, traceback_))        
         print "WARNING: failed to match a known service from specified 'assigned number' - exception:", exstr
 
-
+    chrc_assigned_number_list = chrc_df.assigned_number.values
+        
     try:
         bt_assigned_numbers.check_chrc_assigned_number_list(chrc_assigned_number_list)
     except:
         type_, value_, traceback_ = sys.exc_info()
         exstr = str(traceback.format_exception(type_, value_, traceback_))        
-        print "WARNING: failed to match a known characteristic from specified 'assigned number' - exception:", exstr
-        
+        print "WARNING: failed to match a known characteristic from specified 'assigned number' - exception:", exstr        
 
     service = Service(bus, index, service_assigned_number, is_primary)
+    
+    for id, row in chrc_df.iterrows():
 
-    chrc_index = 0
-    for i in range(len(chrc_assigned_number_list)):
-
-        chrc_assigned_number = chrc_assigned_number_list[i]
-        mqtt_topic_url = mqtt_topic_url_list[i]
-                
-        chrc = MqttSrcReadNotifyCharacteristic(bus, chrc_index, service, chrc_assigned_number, "00", mqtt_topic_url)
+        chrc = MqttSrcReadNotifyCharacteristic(bus, id + 1, service, row.assigned_number, row.default_val_hexdump, row.mqtt_url)
         service.add_characteristic(chrc)
-        chrc_index += 1
         
     return service
 
