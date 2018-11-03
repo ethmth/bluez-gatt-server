@@ -31,7 +31,10 @@ You can use the `bc` command in most GNU/Linux systems to help calculate the 1-b
 
 (The 'default_val' of battery level specified in above csv is in the same format: so hexdump 64 means 100 so you'd get battery level 100% read if you didn't update the value via mqtt first...)
 
-Now, use 'nRF Connect' BLE app (or similar) to read this 'battery level' characteristic from phone! Yes, it would show 17%.
+Now, use 'nRF Connect' BLE app (or similar) to read this 'battery level' characteristic from phone! Yes, it would show 17% as in below screenshot:
+
+![](nrf_connect_read_screenshot.png)
+
 Then, press the 'subscribe notifications' button, and update the value to 16 on computer:
 
 `mosquitto_pub -t "my_battery_level" -m "10"`
