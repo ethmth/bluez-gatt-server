@@ -10,17 +10,18 @@ Easy to use
 -----------
 
 Host a BLE GATT Service with Read/Notify Characteristics from a one line bash/terminal command:
-`
-python bluez-gatt-server.py --service_assigned_number "Battery Service" --characteristic_assigned_number_list "[('Battery Level', 'mqtt://localhost:1883/my_battery_level')]"
-`
+
+`python bluez-gatt-server.py --service_assigned_number "Battery Service" --characteristic_assigned_number_list "[('Battery Level', 'mqtt://localhost:1883/my_battery_level')]"`
 
 Now we must Update (initialize) the characteristics using a hex string from another (MQTT) mosquitto_pub command (this is important otherwise reads can fail as the default value is a one byte zero value that might not match your characteristic's spec) - let's try update the battery percent to 17% - this is a one-byte hex string of '11':
+
 `mosquitto_pub -t "my_battery_level" -m "11"`
 
 (You can use 'bc' to calculate the 1-byte hex value of 17% too like: `"obase=16; 17" | bc` instead of calculating '11'.)
 
 Now, use 'nRF Connect' BLE app (or similar) to read this 'battery level' characteristic from phone! Yes, it would show 17%.
 Then, press the 'subscribe notifications' button, and update the value to 16 on computer:
+
 `mosquitto_pub -t "my_battery_level" -m "10"`
 
 You'd see the value update to 16% in the phone app instantly!
