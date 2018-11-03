@@ -43,7 +43,7 @@ You'd see the value update to 16% in the phone app instantly!
 
 Done - in a similar manner - you can now easily script to create and update your BLE services!
 
-In above example, we use a one-byte length hex value to update the characteristic because it is declared as a 'uint8' in the Bluetooth specs - [see this link](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.battery_level.xml&u=org.bluetooth.characteristic.battery_level.xml) - but for other characteristics it can be multiple bytes and might have to pass through some formulas first as per the Bluetooth spec of that service's characteristic.)
+In above example, we use a one-byte length hex value to update the characteristic because it is declared as a 'uint8' in the Bluetooth specs - [see this characteristic info link](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.battery_level.xml&u=org.bluetooth.characteristic.battery_level.xml) - which is linked from [this service info link](https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.battery_service.xml) - but for other characteristics it can be multiple bytes and might have to pass through some formulas first as per the Bluetooth spec of that service's characteristic.)
 
 Obviously, as the commands above hints, you can also specify remote MQTT servers/topics which might stream from remote sensors/notifications and you might also use various MQTT APIs to update the MQTT topic as alternatives to the 'mosquitto_pub' command too.
 
