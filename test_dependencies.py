@@ -5,7 +5,6 @@ def test():
     import pandas
     import paho.mqtt.client
 
-    assert os.system("which mosquitto") == 0
     assert os.system("which mosquitto_pub") == 0
     
 
