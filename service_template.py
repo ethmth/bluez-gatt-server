@@ -278,10 +278,14 @@ def create_read_notify_service(bus, index, service_assigned_number, is_primary, 
             raise Exception("supplied config dataframe is missing required column: {}".format(required_col))
 
     # check assgined_number rows dont dont start with 0x assume they're chrc 'NAME' in spec and try match them
-    needs_remap_mask = ~chrc_df.assigned_number.str.startswith("0x")
+    startswith_0x_mask = chrc_df.assigned_number.str.startswith("0x")
+    needs_remap_mask = ~startswith_0x_mask
     chrc_df.loc[needs_remap_mask, "assigned_number"] = chrc_df.loc[needs_remap_mask, "assigned_number"].apply(
         bt_assigned_numbers.get_gatt_chrc_assigned_number_for_name
     )
+
+    chrc_df.loc[startswith_0x_mask, "assigned_number"] = chrc_df.loc[startswith_0x_mask, "assigned_number"].apply(lambda x: int(x, 16))
+    chrc_df["assigned_number"] = chrc_df["assigned_number"].astype(int)
 
     print "read characteristics table:\n", chrc_df
     
@@ -292,8 +296,8 @@ def create_read_notify_service(bus, index, service_assigned_number, is_primary, 
         exstr = str(traceback.format_exception(type_, value_, traceback_))        
         print "WARNING: failed to match a known service from specified 'assigned number' - exception:", exstr
 
-    chrc_assigned_number_list = chrc_df.assigned_number.values
-        
+    chrc_assigned_number_list = chrc_df.assigned_number.values.tolist()
+    print "chrc_assigned_number_list type:",type(chrc_assigned_number_list), "values:", chrc_assigned_number_list
     try:
         bt_assigned_numbers.check_chrc_assigned_number_list(chrc_assigned_number_list)
     except:
