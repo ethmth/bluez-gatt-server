@@ -56,7 +56,7 @@ def main():
     
     ### prepare dbus stuff
 
-    print "Preparing dbus..."
+    print("Preparing dbus...")
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     bus = dbus.SystemBus()
     mainloop = GObject.MainLoop()
@@ -64,7 +64,7 @@ def main():
     
     ### create BLE service
 
-    print "Creating BLE service..."
+    print("Creating BLE service...")
 
     service = service_template.create_read_notify_service(
         bus,
@@ -77,11 +77,11 @@ def main():
     ### start BLE ad (+power on device)
     service_assigned_number_hex_string = None
     if isinstance(service_assigned_number, str):
-        print "prepare ad: service_assigned_number is a str - convert to int by name lookup"
+        print("prepare ad: service_assigned_number is a str - convert to int by name lookup")
         service_assigned_number = bt_assigned_numbers.get_gatt_service_assigned_number_for_name(service_assigned_number)
         
     service_assigned_number_hex_string = "0x%x" % service_assigned_number
-    print "prepare ad: got service_assigned_number:", service_assigned_number
+    print("prepare ad: got service_assigned_number:", service_assigned_number)
     
     ad_template.start_ad(mainloop, bus, args_dict['adapter_name'], [service_assigned_number_hex_string])
 
