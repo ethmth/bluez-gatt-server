@@ -38,7 +38,7 @@ class AdTemplate(Advertisement):
             raise Exception("service_assigned_number_list must not be an empty list - ABORT")
         
         for service_assigned_number in service_assigned_number_list:
-            print "adding service_assigned_number:", service_assigned_number
+            print("adding service_assigned_number:", service_assigned_number)
             self.add_service_uuid(service_assigned_number)
         self.add_manufacturer_data(manuf_code, manuf_data)
         self.add_service_data(service_assigned_number, service_data)

@@ -12,7 +12,6 @@ import dbus.service
 import functools
 import sys
 import traceback
-import urlparse
 import threading
 
 import paho.mqtt.client as mqtt
@@ -23,6 +22,11 @@ from gatt_server import Application
 from gatt_server import Service
 from gatt_server import Characteristic
 import bt_assigned_numbers
+
+try:
+        import urlparse
+except ImportError:
+        import urllib.parse as urlparse
 
 __author__ = "Kasidit Yusuf"
 __copyright__ = "bluez-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf."
@@ -59,7 +63,7 @@ class AppTemplate(Application):
             raise Exception("service_list must not be an empty list - ABORT")
 
         for service in service_list:
-            print "adding service:", service
+            print("adding service:", service)
             self.add_service(service)
 
     def get_path(self):
@@ -107,13 +111,13 @@ class ReadNotifyCharacteristic(Characteristic):
         
     def update_value(self, new_value):
 
-        print "update_value:", new_value
+        print("update_value:", new_value)
         try:            
             self.value_buffer = buffer_to_dbus_byte_list(hex_str_decode_to_buffer(new_value))
-            print "update_value calling PropertiesChanged - new self.value_buffer hex dump:", self.value_buffer
+            print("update_value calling PropertiesChanged - new self.value_buffer hex dump:", self.value_buffer)
             
             if not self.notifying:
-                print "update_value but not notifying so ignore this call"
+                print("update_value but not notifying so ignore this call")
                 return
             
             self.PropertiesChanged(
@@ -127,20 +131,20 @@ class ReadNotifyCharacteristic(Characteristic):
         except:
             type_, value_, traceback_ = sys.exc_info()
             exstr = str(traceback.format_exception(type_, value_, traceback_))        
-            print "WARNING: update_value - exception:", exstr
+            print("WARNING: update_value - exception:", exstr)
 
     
     def ReadValue(self, options):
-        print "ReadValue: enter"
+        print("ReadValue: enter")
         if self.value_buffer is None:
-            print "WARNING: ReadValue called when self.value_buffer is None"
+            print("WARNING: ReadValue called when self.value_buffer is None")
             return None
 
         return self.value_buffer
 
     
     def StartNotify(self):
-        print "StartNotify: enter"
+        print("StartNotify: enter")
         if self.notifying:
             print('Already notifying, nothing to do')
             return
@@ -149,7 +153,7 @@ class ReadNotifyCharacteristic(Characteristic):
 
         
     def StopNotify(self):
-        print "StopNotify: enter"
+        print("StopNotify: enter")
         if not self.notifying:
             print('Not notifying, nothing to do')
             return
@@ -171,9 +175,9 @@ class MqttSrcReadNotifyCharacteristic(ReadNotifyCharacteristic):
         )
 
         if not mqtt_topic_url:
-            print "WARNING: MqttSrcReadNotifyCharacteristic: mqtt_topic_url is empty for chrc_assigned_number 0x%x - omit value updates from mqtt" % (chrc_assigned_number)
+            print("WARNING: MqttSrcReadNotifyCharacteristic: mqtt_topic_url is empty for chrc_assigned_number 0x%x - omit value updates from mqtt" % (chrc_assigned_number))
         else:
-            url = urlparse.urlparse(mqtt_topic_url)
+            url = urlparse(mqtt_topic_url)
 
             topic = url.path[1:]
             if not topic:
@@ -190,7 +194,7 @@ class MqttSrcReadNotifyCharacteristic(ReadNotifyCharacteristic):
 
             mqttc.username_pw_set(url.username, url.password)
             
-            print "order mqtt_client connect to:", url            
+            print("order mqtt_client connect to:", url)
             mqttc.connect(url.hostname, url.port)
             mqttc.subscribe(topic, 0)
 
@@ -260,9 +264,9 @@ def buffer_to_dbus_byte_list(bufferstr):
 def create_read_notify_service(bus, index, service_assigned_number, is_primary, chrc_table_arg):
 
     if isinstance(service_assigned_number, str):
-        print "provided service_assigned_number is a string - trying to match known services for the assigned_number..."
+        print("provided service_assigned_number is a string - trying to match known services for the assigned_number...")
         service_assigned_number = bt_assigned_numbers.get_gatt_service_assigned_number_for_name(service_assigned_number)
-        print "provided service_assigned_number is a string - got match: 0x%x" % service_assigned_number
+        print("provided service_assigned_number is a string - got match: 0x%x" % service_assigned_number)
 
     chrc_df = None
     if chrc_table_arg:
@@ -287,23 +291,23 @@ def create_read_notify_service(bus, index, service_assigned_number, is_primary, 
     chrc_df.loc[startswith_0x_mask, "assigned_number"] = chrc_df.loc[startswith_0x_mask, "assigned_number"].apply(lambda x: int(x, 16))
     chrc_df["assigned_number"] = chrc_df["assigned_number"].astype(int)
 
-    print "read characteristics table:\n", chrc_df
+    print("read characteristics table:\n", chrc_df)
     
     try:
         bt_assigned_numbers.check_service_assigned_number(service_assigned_number)
     except:
         type_, value_, traceback_ = sys.exc_info()
         exstr = str(traceback.format_exception(type_, value_, traceback_))        
-        print "WARNING: failed to match a known service from specified 'assigned number' - exception:", exstr
+        print("WARNING: failed to match a known service from specified 'assigned number' - exception:", exstr)
 
     chrc_assigned_number_list = chrc_df.assigned_number.values.tolist()
-    print "chrc_assigned_number_list type:",type(chrc_assigned_number_list), "values:", chrc_assigned_number_list
+    print("chrc_assigned_number_list type:",type(chrc_assigned_number_list), "values:", chrc_assigned_number_list)
     try:
         bt_assigned_numbers.check_chrc_assigned_number_list(chrc_assigned_number_list)
     except:
         type_, value_, traceback_ = sys.exc_info()
         exstr = str(traceback.format_exception(type_, value_, traceback_))        
-        print "WARNING: failed to match a known characteristic from specified 'assigned number' - exception:", exstr        
+        print("WARNING: failed to match a known characteristic from specified 'assigned number' - exception:", exstr)
 
     service = Service(bus, index, service_assigned_number, is_primary)
     
