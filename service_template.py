@@ -24,9 +24,9 @@ from gatt_server import Characteristic
 import bt_assigned_numbers
 
 try:
-        import urlparse
-except ImportError:
-        import urllib.parse as urlparse
+    from urllib.parse import urlparse
+except:
+    from urlparse import urlparse
 
 __author__ = "Kasidit Yusuf"
 __copyright__ = "bluez-gatt-server 1.0 Copyright (C) 2018 Kasidit Yusuf."
@@ -248,7 +248,10 @@ def hex_str_decode_to_buffer(value):
     value = value.replace(' ','')
     value = value.replace('0x','')
 
-    retstr = value.decode('hex')
+    try:
+        retstr = bytes.fromhex(value)
+    except: 
+        retstr = value.decode('hex')
     return retstr
 
     
