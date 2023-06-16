@@ -66,7 +66,15 @@ def main():
 
     print("Creating BLE service...")
 
-    service = service_template.create_read_notify_service(
+    # service = service_template.create_read_notify_service(
+    #     bus,
+    #     0,
+    #     service_assigned_number,
+    #     True,
+    #     args_dict['characteristics_table_csv']
+    # )
+
+    service = service_template.create_read_write_notify_service(
         bus,
         0,
         service_assigned_number,
