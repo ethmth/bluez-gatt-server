@@ -24,6 +24,7 @@ class Advertisement(dbus.service.Object):
         self.path = self.PATH_BASE + str(index)
         self.bus = bus
         self.ad_type = advertising_type
+        self.local_name = None
         self.service_uuids = None
         self.manufacturer_data = None
         self.solicit_uuids = None
@@ -34,6 +35,10 @@ class Advertisement(dbus.service.Object):
     def get_properties(self):
         properties = dict()
         properties['Type'] = self.ad_type
+
+        if self.local_name is not None:
+            properties['LocalName'] = dbus.String(self.local_name)
+
         if self.service_uuids is not None:
             properties['ServiceUUIDs'] = dbus.Array(self.service_uuids,
                                                     signature='s')
@@ -48,6 +53,10 @@ class Advertisement(dbus.service.Object):
                                                         signature='sv')
         if self.include_tx_power is not None:
             properties['IncludeTxPower'] = dbus.Boolean(self.include_tx_power)
+
+        if self.local_name is not None:
+            properties["LocalName"] = dbus.String(self.local_name)
+
         return {LE_ADVERTISEMENT_IFACE: properties}
 
     def get_path(self):
@@ -73,6 +82,11 @@ class Advertisement(dbus.service.Object):
             self.service_data = dbus.Dictionary({}, signature='sv')
         self.service_data[uuid] = dbus.Array(data, signature='y')
 
+    def add_local_name(self, name):
+        if not self.local_name:
+            self.local_name = ""
+        self.local_name = dbus.String(name)
+
     @dbus.service.method(DBUS_PROP_IFACE,
                          in_signature='s',
                          out_signature='a{sv}')
@@ -97,6 +111,7 @@ class TestAdvertisement(Advertisement):
         self.add_service_uuid('180F')
         self.add_manufacturer_data(0xffff, [0x00, 0x01, 0x02, 0x03, 0x04])
         self.add_service_data('9999', [0x00, 0x01, 0x02, 0x03, 0x04])
+        self.add_local_name("TestAdvertise")
         self.include_tx_power = True
 
 
