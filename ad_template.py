@@ -24,7 +24,7 @@ __status__ = "Production"
 class AdTemplate(Advertisement):
     def __init__(self, bus, index,
                  service_assigned_number_list,
-                 local_name="DefaultName"
+                 local_name="DefaultName",
                  manuf_code=0xffff,
                  manuf_data=[0x00, 0x01, 0x02, 0x03, 0x04],
                  service_assigned_number='9999',
