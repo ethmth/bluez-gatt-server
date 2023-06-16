@@ -225,3 +225,4 @@ Weight	org.bluetooth.characteristic.weight	0x2A98	GSS
 Weight Measurement	org.bluetooth.characteristic.weight_measurement	0x2A9D	GSS
 Weight Scale Feature	org.bluetooth.characteristic.weight_scale_feature	0x2A9E	GSS
 Wind Chill	org.bluetooth.characteristic.wind_chill	0x2A79	GSS
+My Characteristic	org.bluetooth.characteristic.my_characteristics	0x6969	GSS
