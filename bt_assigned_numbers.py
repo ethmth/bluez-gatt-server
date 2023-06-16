@@ -16,10 +16,12 @@ __status__ = "Production"
 g_df_cache = {}
 
 # Data from https://www.bluetooth.com/specifications/gatt/services
-BT_GATT_SERVICE_ASSIGNED_NUMBERS_CSV = "bt_gatt_service_assigned_numbers.csv"
+#BT_GATT_SERVICE_ASSIGNED_NUMBERS_CSV = "bt_gatt_service_assigned_numbers.csv"
+BT_GATT_SERVICE_ASSIGNED_NUMBERS_CSV = "services.csv"
 
 # Data from https://www.bluetooth.com/specifications/gatt/characteristics
-BT_GATT_CHRC_ASSIGNED_NUMBERS_CSV = "bt_gatt_chrc_assigned_numbers.csv"
+#BT_GATT_CHRC_ASSIGNED_NUMBERS_CSV = "bt_gatt_chrc_assigned_numbers.csv"
+BT_GATT_CHRC_ASSIGNED_NUMBERS_CSV = "characteristics.csv"
 
 
 def get_assigned_numbers_df(csv_fn):
