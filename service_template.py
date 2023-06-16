@@ -111,6 +111,12 @@ class ReadNotifyCharacteristic(Characteristic):
         
     def update_value(self, new_value):
 
+        try:
+            if isinstance(new_value, bytes):
+                new_value = str(new_value, 'utf-8')
+        except:
+            pass
+
         print("update_value:", new_value)
         try:            
             self.value_buffer = buffer_to_dbus_byte_list(hex_str_decode_to_buffer(new_value))
