@@ -18,6 +18,11 @@ from random import randint
 import exceptions
 import adapters
 
+try:
+    import numpy as np
+except:
+    pass
+
 BLUEZ_SERVICE_NAME = 'org.bluez'
 LE_ADVERTISING_MANAGER_IFACE = 'org.bluez.LEAdvertisingManager1'
 DBUS_OM_IFACE = 'org.freedesktop.DBus.ObjectManager'
@@ -81,6 +86,11 @@ class Service(dbus.service.Object):
         # framework requires hex string so auto format it if an int was specified
         if isinstance(uuid, int):
             uuid = '0x%x' % uuid
+        try:
+            if uuid.dtype == np.int64:
+                uuid = '0x%x' % uuid
+        except:
+            pass
             
         self.uuid = uuid
         self.primary = primary
