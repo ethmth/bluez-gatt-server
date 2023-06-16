@@ -225,4 +225,11 @@ Weight	org.bluetooth.characteristic.weight	0x2A98	GSS
 Weight Measurement	org.bluetooth.characteristic.weight_measurement	0x2A9D	GSS
 Weight Scale Feature	org.bluetooth.characteristic.weight_scale_feature	0x2A9E	GSS
 Wind Chill	org.bluetooth.characteristic.wind_chill	0x2A79	GSS
-My Characteristic	org.bluetooth.characteristic.my_characteristics	0x6969	GSS
+Scooter Send Acc On	org.bluetooth.characteristic.scooter_send_acc_on	0x7610	GSS
+Scooter Send Gps On	org.bluetooth.characteristic.scooter_send_gps_on	0x7611	GSS
+Scooter Send Speed On	org.bluetooth.characteristic.scooter_send_speed_on	0x7612	GSS
+Scooter Send Classifier	org.bluetooth.characteristic.scooter_send_classifier	0x7613	GSS
+Scooter Recv Acc Data	org.bluetooth.characteristic.scooter_recv_acc_data	0x7620	GSS
+Scooter Recv GPS Data	org.bluetooth.characteristic.scooter_recv_gps_data	0x7621	GSS
+Scooter Recv Speed Data	org.bluetooth.characteristic.scooter_recv_speed_data	0x7622	GSS
+Scooter Recv Prediction	org.bluetooth.characteristic.scooter_recv_prediction	0x7623	GSS

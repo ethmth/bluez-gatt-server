@@ -24,11 +24,12 @@ __status__ = "Production"
 class AdTemplate(Advertisement):
     def __init__(self, bus, index,
                  service_assigned_number_list,
-                 local_name="DefaultName",
-                 manuf_code=0xffff,
-                 manuf_data=[0x00, 0x01, 0x02, 0x03, 0x04],
-                 service_assigned_number='9999',
-                 service_data=[0x00, 0x01, 0x02, 0x03, 0x04],
+                 local_name="ScooterPi",
+                 manuf_code=0x7676,
+                #  manuf_data=[0x00, 0x01, 0x02, 0x03, 0x04],
+                manuf_data=[0x76],
+                #  service_assigned_number='9999',
+                #  service_data=[0x00, 0x01, 0x02, 0x03, 0x04],
                  include_tx_power=True,
     ):
 
@@ -42,7 +43,7 @@ class AdTemplate(Advertisement):
             print("adding service_assigned_number:", service_assigned_number)
             self.add_service_uuid(service_assigned_number)
         self.add_manufacturer_data(manuf_code, manuf_data)
-        self.add_service_data(service_assigned_number, service_data)
+        # self.add_service_data(service_assigned_number, service_data)
         self.include_tx_power = include_tx_power
         self.add_local_name(local_name)
 

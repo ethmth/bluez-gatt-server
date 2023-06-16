@@ -1,3 +1,9 @@
 assigned_number,mqtt_url,default_val_hexdump
-Object ID,mqtt://localhost:1883/object_id,64
-My Characteristic,mqtt://localhost:1883/my_characteristic,85
+Scooter Send Acc On,mqtt://localhost:1883/scooter_send_acc_on,00
+Scooter Send Gps On,mqtt://localhost:1883/scooter_send_gps_on,00
+Scooter Send Speed On,mqtt://localhost:1883/scooter_send_speed_on,00
+Scooter Send Classifier,mqtt://localhost:1883/scooter_send_classifier,53
+Scooter Recv Acc Data,mqtt://localhost:1883/scooter_recv_acc_data,00000000
+Scooter Recv GPS Data,mqtt://localhost:1883/scooter_recv_gps_data,00000000
+Scooter Recv Speed Data,mqtt://localhost:1883/scooter_recv_speed_data,00000000
+Scooter Recv Prediction,mqtt://localhost:1883/scooter_recv_prediction,53

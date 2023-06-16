@@ -39,3 +39,4 @@ Transport Discovery	org.bluetooth.service.transport_discovery	0x1824	GSS
 Tx Power	org.bluetooth.service.tx_power	0x1804	GSS
 User Data	org.bluetooth.service.user_data	0x181C	GSS
 Weight Scale	org.bluetooth.service.weight_scale	0x181D	GSS
+Scooter Service	org.bluetooth.service.scooter_service	0x7600	GSS

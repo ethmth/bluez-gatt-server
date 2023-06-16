@@ -100,7 +100,7 @@ class ReadWriteNotifyCharacteristic(Characteristic):
             chrc_assigned_number,            
             ['read', 'write', 'notify'],
             service)
-        self.notifying = True
+        self.notifying = False
 
         if initial_value is not None:
             self.value_buffer = buffer_to_dbus_byte_list(hex_str_decode_to_buffer(initial_value))
@@ -302,7 +302,7 @@ class MqttSrcReadWriteNotifyCharacteristic(ReadWriteNotifyCharacteristic):
         rc = 0
         while rc == 0:
             rc = self.mqttc.loop()
-            print("rc: " + str(rc))
+            # print("rc: " + str(rc))
             
     # Define mqtt event callbacks
     def on_connect(self, client, userdata, flags, rc):
