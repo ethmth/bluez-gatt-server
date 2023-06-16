@@ -100,7 +100,7 @@ class ReadWriteNotifyCharacteristic(Characteristic):
             chrc_assigned_number,            
             ['read', 'write', 'notify'],
             service)
-        self.notifying = False
+        self.notifying = True
 
         if initial_value is not None:
             self.value_buffer = buffer_to_dbus_byte_list(hex_str_decode_to_buffer(initial_value))
@@ -120,6 +120,7 @@ class ReadWriteNotifyCharacteristic(Characteristic):
         print("update_value:", new_value)
         try:            
             self.value_buffer = buffer_to_dbus_byte_list(hex_str_decode_to_buffer(new_value))
+
             print("update_value calling PropertiesChanged - new self.value_buffer hex dump:", self.value_buffer)
             
             if not self.notifying:
@@ -149,9 +150,8 @@ class ReadWriteNotifyCharacteristic(Characteristic):
         return self.value_buffer
 
     def WriteValue(self, value, options):
-        # TODO: Implement this function
-        print("Value", value)
-        return value
+        message = ''.join([str(item) for item in value])
+        print("WriteValue (Not Publishing):", message)
 
     def StartNotify(self):
         print("StartNotify: enter")
@@ -248,8 +248,6 @@ class ReadNotifyCharacteristic(Characteristic):
         self.notifying = False
 
 class MqttSrcReadWriteNotifyCharacteristic(ReadWriteNotifyCharacteristic):
-    # TODO: Finish implementing this class
-
     def __init__(self, bus, index, service, chrc_assigned_number, initial_value, mqtt_topic_url):
 
         self.mqtt_connected = False
@@ -289,7 +287,14 @@ class MqttSrcReadWriteNotifyCharacteristic(ReadWriteNotifyCharacteristic):
             mqtt_thread.daemon = True
             mqtt_thread.start()
 
-        
+            self.mqttc = mqttc
+            self.topic = topic
+
+    def WriteValue(self, value, options):
+        message = ''.join([str(item) for item in value])
+        print("WriteValue:", message)
+        self.mqttc.publish(self.topic, message.encode().hex())
+    
     def mqtt_loop(self):
         if self.mqttc is None:
             return
